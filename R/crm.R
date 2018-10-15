@@ -24,8 +24,9 @@ LogLik <- function(dose.tox, tox.rate)
 #' @examples
 PowerWorkingModel <- function(b, skeleton)
 {
-  cum.tox.rate <- outer(skeleton, cumsum(exp(b)), "^")
-  tox.rate <- cbind(1, cum.tox.rate) - cbind(cum.tox.rate, 0)
+  cum.tox.rate <- cbind(1, outer(skeleton, cumsum(exp(b)), "^"), 0)
+  m <- ncol(cum.tox.rate)
+  tox.rate <- cum.tox.rate[, 1 : (m - 1)] - cum.tox.rate[, 2 : m]
   return(tox.rate)
 }
 
@@ -50,7 +51,7 @@ WorkingModel <- function(param, skeleton, model = "power", ...)
 # test --------------------------------------------------------------------
 
 dose.tox <- matrix(c(1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1), 4, 3, byrow = TRUE)
-tox.rate <- WorkingModel(c(-1, 1), c(0.1, 0.5, 0.6, 0.9), model = "logistic")
+tox.rate <- WorkingModel(c(-1, 1), c(0.1, 0.5, 0.6, 0.9), model = "power")
 print(tox.rate)
 
 print(LogLik(dose.tox, tox.rate))
