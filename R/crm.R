@@ -29,12 +29,28 @@ PowerWorkingModel <- function(b, skeleton)
   return(tox.rate)
 }
 
+#' Compute Toxicity Rates for Working Model
+#'
+#' @param param parameters of working model
+#' @param skeleton mapped skeleton for dose levels
+#' @param model working model, character, default = "power"
+#' @param ... other (fixed) parameters of working model
+#'
+#' @return
+#' @export
+#'
+#' @examples
+WorkingModel <- function(param, skeleton, model = "power", ...)
+{
+  switch(model,
+         power = PowerWorkingModel(param, skeleton),
+         paste(model, "model currently NOT supported"))
+}
 
 # test --------------------------------------------------------------------
 
-dose.tox <- matrix(c(1, 0, 0, 0, 1, 0, 0, 0, 1), 3, 3, byrow = TRUE)
-tox.rate <- matrix(c(0.50, 0.25, 0.25, 0.25, 0.50, 0.25, 0.25, 0.25, 0.50), 3, 3, byrow = TRUE)
-tox.rate <- PowerWorkingModel(c(-1, 1), c(0.1, 0.5, 0.9))
+dose.tox <- matrix(c(1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1), 4, 3, byrow = TRUE)
+tox.rate <- WorkingModel(c(-1, 1), c(0.1, 0.5, 0.6, 0.9), model = "logistic")
 print(tox.rate)
 
 print(LogLik(dose.tox, tox.rate))
