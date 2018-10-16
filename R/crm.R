@@ -1,6 +1,6 @@
 #' Compute the Log Probability of Dose-Toxicity Data, Given Toxicity Rates
 #'
-#' @param dose.tox counts of dose-toxicity, an integer matrix where nrow = # of dose levels, and ncol = # of toxicity levels
+#' @param dose.tox counts of dose-toxicity, an integer matrix where nrow = # of dose levels, and ncol = (# of toxicity levels + 1)
 #' @param tox.rate toxicity rates computed from model parameter, a matrix of the same dimension as dose.tox, rowSums(tox.rate) should be ones
 #'
 #' @return
@@ -15,7 +15,7 @@ LogLik <- function(dose.tox, tox.rate)
 
 #' Compute Toxicity Rates for Power Working Model, Given Parameters and Skeleton
 #'
-#' @param b parameters of power working model, a real vector of length = (# of toxicity levels - 1)
+#' @param b parameters of power working model, a real vector of length = # of toxicity levels
 #' @param skeleton mapped skeleton for dose levels, a vector of length = # of dose levels, should be between 0 and 1
 #'
 #' @return
@@ -31,7 +31,7 @@ PowerWorkingModel <- function(b, skeleton)
 
 #' Compute Toxicity Rates for Working Model
 #'
-#' @param param parameters of working model, a real vector of length = (# of toxicity levels - 1)
+#' @param param parameters of working model, a real vector of length = # of toxicity levels
 #' @param skeleton mapped skeleton for dose levels
 #' @param model working model, character, default = "power"
 #' @param ... other (fixed) parameters of working model
@@ -50,7 +50,7 @@ WorkingModel <- function(param, skeleton, model = "power", ...)
 #' Compute Maimum Tolerated Dose (MTD) from Working Model
 #'
 #' @inheritParams WorkingModel
-#' @param target target cumulative toxicity rates, a vector of length = (# of toxicity levels - 1)
+#' @param target target cumulative toxicity rates, a vector of length = # of toxicity levels
 #'
 #' @return
 #' @export
@@ -88,16 +88,39 @@ FitWorkingModelMLE <- function(dose.tox, skeleton, model = "power", ...)
   return(param)
 }
 
+#' Convert Trial Sequence to Dose-Toxicity Data (Counts)
+#'
+#' @param dose dose level sequence
+#' @param tox toxicity sequence
+#' @param n.dose number of possible dose levels
+#' @param n.tox number of possible toxicity levels (0 not included)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+Seq2DoseTox <- function(dose, tox, n.dose, n.tox)
+{
+  dose.tox <- matrix(0, n.dose, n.tox + 1)
+  for (i in 1 : length(dose))
+  {
+    dose.tox[dose[i], tox[i] + 1] <- dose.tox[dose[i], tox[i] + 1] + 1
+  }
+  return(dose.tox)
+}
+
 # test --------------------------------------------------------------------
 
 param <- c(-1, 1)
 skeleton <- c(0.1, 0.5, 0.6, 0.9)
-dose.tox <- matrix(c(0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0), 4, 3, byrow = TRUE)
+dose <- c(1, 1, 2, 2, 3)
+tox <- c(0, 0, 0, 0, 0)
+dose.tox <- Seq2DoseTox(dose, tox, 4, 2)
 tox.rate <- WorkingModel(param, skeleton, model = "power")$tox.rate
 print(tox.rate)
 
 print(LogLik(dose.tox, tox.rate))
-mtd <- MTD(param, skeleton, target = c(0.4, 0.4))
+mtd <- MTD(param, skeleton, target = c(0.5, 0.25))
 print(mtd)
 
 param.fit <- FitWorkingModelMLE(dose.tox, skeleton)
