@@ -88,6 +88,22 @@ FitWorkingModelMLE <- function(dose.tox, skeleton, model = "power", ...)
   return(param)
 }
 
+#' Fit Working Model
+#'
+#' @inheritParams FitWorkingModelMLE
+#' @param method fitting method, default = "mle"
+#'
+#' @return
+#' @export
+#'
+#' @examples
+FitWorkingModel <- function(dose.tox, skeleton, model = "power", method = "mle", ...)
+{
+  switch(method,
+         mle = FitWorkingModelMLE(dose.tox, skeleton, model, ...),
+         paste(method, "method currently NOT supported"))
+}
+
 #' Convert Trial Sequence to Dose-Toxicity Data (Counts)
 #'
 #' @param dose dose level sequence
@@ -123,9 +139,9 @@ Assign <- function(mtd, max.dose)
   return(min(max(mtd, 1), max.dose + 1))
 }
 
-#' Continual Reassessment Method (CRM) by Maximum Likelihood Estimate (MLE)
+#' Continual Reassessment Method (CRM)
 #'
-#' @inheritParams LogLik
+#' @inheritParams FitWorkingModel
 #' @inheritParams MTD
 #' @inheritParams Assign
 #'
@@ -133,7 +149,7 @@ Assign <- function(mtd, max.dose)
 #' @export
 #'
 #' @examples
-CRMMLE <- function(dose.tox, skeleton, model = "power", target, max.dose = NULL, ...)
+CRM <- function(dose.tox, skeleton, model = "power", method = "mle", target, max.dose = NULL, ...)
 {
   if (is.null(max.dose))
   {
@@ -147,7 +163,7 @@ CRMMLE <- function(dose.tox, skeleton, model = "power", target, max.dose = NULL,
     }
   }
 
-  param <- FitWorkingModelMLE(dose.tox, skeleton, model, ...)
+  param <- FitWorkingModel(dose.tox, skeleton, model, method, ...)
   mtd <- MTD(param, skeleton, model, target, ...)
   dose.next <- Assign(mtd, max.dose)
 
@@ -175,4 +191,4 @@ print(param.fit)
 print(WorkingModel(param.fit, skeleton)$tox.rate)
 
 
-print(CRMMLE(dose.tox, skeleton, target = c(0.5, 0.25)))
+print(CRM(dose.tox, skeleton, target = c(0.5, 0.25)))
