@@ -22,7 +22,7 @@ LogLik <- function(dose.tox, tox.rate)
 #' @export
 #'
 #' @examples
-PowerWorkingModel <- function(b, skeleton)
+WorkingModelPower <- function(b, skeleton)
 {
   cum.tox.rate <- outer(skeleton, cumsum(exp(b)), "^")
   tox.rate <- cbind(1, cum.tox.rate) - cbind(cum.tox.rate, 0)
@@ -43,7 +43,7 @@ PowerWorkingModel <- function(b, skeleton)
 WorkingModel <- function(param, skeleton, model = "power", ...)
 {
   switch(model,
-         power = PowerWorkingModel(param, skeleton),
+         power = WorkingModelPower(param, skeleton),
          paste(model, "model currently NOT supported"))
 }
 
@@ -108,6 +108,22 @@ Seq2DoseTox <- function(dose, tox, n.dose, n.tox)
   }
   return(dose.tox)
 }
+
+#' Dose Assignment/Recommendation Given MTD Estiamte and Highest Assigned Dose, Avoid Skipping Dose
+#'
+#' @param mtd MTD estimate
+#' @param max.dose highest assigned dose so far
+#'
+#' @return
+#' @export
+#'
+#' @examples
+Assign <- function(mtd, max.dose)
+{
+  return(min(max(mtd, 1), max.dose + 1))
+}
+
+
 
 # test --------------------------------------------------------------------
 
