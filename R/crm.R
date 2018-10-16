@@ -59,7 +59,8 @@ WorkingModel <- function(param, skeleton, model = "power", ...)
 MTD <- function(param, skeleton, model = "power", target, ...)
 {
   cum.tox.rate <- WorkingModel(param, skeleton, model, ...)$cum.tox.rate
-  mtd <- min(colSums(cum.tox.rate <= matrix(target, length(skeleton), length(target), byrow = TRUE)))
+  # mtd <- min(colSums(cum.tox.rate <= matrix(target, length(skeleton), length(target), byrow = TRUE)))
+  mtd <- min(apply(abs(cum.tox.rate - matrix(target, length(skeleton), length(target), byrow = TRUE)), 2, which.min))
   return(mtd)
 }
 
@@ -160,7 +161,7 @@ CRM <- function(dose.tox, skeleton, model = "power", method = "mle", target, max
   if (is.null(max.dose))
   {
     dose.hist <- rowSums(dose.tox)
-    if (sum(dose.tox) == 0)
+    if (sum(dose.hist) == 0)
     {
       max.dose <- 0
     } else
@@ -191,7 +192,7 @@ ParallelCRM <- function(dose.tox, skeleton, model = "power", method = "mle", tar
   if (is.null(max.dose))
   {
     dose.hist <- rowSums(dose.tox)
-    if (sum(dose.tox) == 0)
+    if (sum(dose.hist) == 0)
     {
       max.dose <- 0
     } else
@@ -227,7 +228,7 @@ ParallelCRM <- function(dose.tox, skeleton, model = "power", method = "mle", tar
 #' @examples
 Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "power", method = "mle", target, crm = "regular", ...)
 {
-  dose.tox <- matrix(0, n.dose, n.tox)
+  dose.tox <- matrix(0, n.dose, n.tox + 1)
   max.dose <- 0
   dose.next <- 1
 
@@ -236,7 +237,7 @@ Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "pow
     max.dose <- max(max.dose, dose.next)
 
     tox.next <- Generator(dose.next)
-    dose.tox[dose.next, tox.next] <- dose.tox[dose.next, tox.next] + 1
+    dose.tox[dose.next, tox.next + 1] <- dose.tox[dose.next, tox.next + 1] + 1
 
     res <- switch(crm,
                   regular = CRM(dose.tox, skeleton, model, method, target, max.dose, ...),
@@ -252,22 +253,22 @@ Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "pow
 
 # test --------------------------------------------------------------------
 
-param <- c(-1, 1)
-skeleton <- c(0.1, 0.5, 0.6, 0.9)
-dose <- c(1, 1, 2, 2)
-tox <- c(0, 0, 0, 0)
-dose.tox <- Seq2DoseTox(dose, tox, 4, 2)
-tox.rate <- WorkingModel(param, skeleton, model = "power")$tox.rate
-print(tox.rate)
-
-print(LogLik(dose.tox, tox.rate))
-mtd <- MTD(param, skeleton, target = c(0.5, 0.25))
-print(mtd)
-
-param.fit <- FitWorkingModelMLE(dose.tox, skeleton)
-print(param.fit)
-
-print(WorkingModel(param.fit, skeleton)$tox.rate)
-
-print(CRM(dose.tox[, c(1, 2)], skeleton, target = 0.5))
-print(ParallelCRM(dose.tox, cbind(skeleton, skeleton), target = c(0.5, 0.25)))
+# param <- c(-1, 1)
+# skeleton <- c(0.1, 0.5, 0.6, 0.9)
+# dose <- c(1, 1, 2, 2)
+# tox <- c(0, 0, 0, 0)
+# dose.tox <- Seq2DoseTox(dose, tox, 4, 2)
+# tox.rate <- WorkingModel(param, skeleton, model = "power")$tox.rate
+# print(tox.rate)
+#
+# print(LogLik(dose.tox, tox.rate))
+# mtd <- MTD(param, skeleton, target = c(0.5, 0.25))
+# print(mtd)
+#
+# param.fit <- FitWorkingModelMLE(dose.tox, skeleton)
+# print(param.fit)
+#
+# print(WorkingModel(param.fit, skeleton)$tox.rate)
+#
+# print(CRM(dose.tox[, c(1, 2)], skeleton, target = 0.5))
+# print(ParallelCRM(dose.tox, cbind(skeleton, skeleton), target = c(0.5, 0.25)))
