@@ -7,7 +7,7 @@
 LogLik(dose.tox, tox.rate)
 }
 \arguments{
-\item{dose.tox}{counts of dose-toxicity, an integer matrix where nrow = # of dose levels, and ncol = # of toxicity levels}
+\item{dose.tox}{counts of dose-toxicity, an integer matrix where nrow = # of dose levels, and ncol = (# of toxicity levels + 1)}
 
 \item{tox.rate}{toxicity rates computed from model parameter, a matrix of the same dimension as dose.tox, rowSums(tox.rate) should be ones}
 }

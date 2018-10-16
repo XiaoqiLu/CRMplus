@@ -102,7 +102,7 @@ FitWorkingModelMLE <- function(dose.tox, skeleton, model = "power", ...)
 Seq2DoseTox <- function(dose, tox, n.dose, n.tox)
 {
   dose.tox <- matrix(0, n.dose, n.tox + 1)
-  for (i in 1 : length(dose))
+  for (i in seq_along(dose))
   {
     dose.tox[dose[i], tox[i] + 1] <- dose.tox[dose[i], tox[i] + 1] + 1
   }
@@ -123,14 +123,44 @@ Assign <- function(mtd, max.dose)
   return(min(max(mtd, 1), max.dose + 1))
 }
 
+#' Continual Reassessment Method (CRM) by Maximum Likelihood Estimate (MLE)
+#'
+#' @inheritParams LogLik
+#' @inheritParams MTD
+#' @inheritParams Assign
+#'
+#' @return
+#' @export
+#'
+#' @examples
+CRMMLE <- function(dose.tox, skeleton, model = "power", target, max.dose = NULL, ...)
+{
+  if (is.null(max.dose))
+  {
+    dose.hist <- rowSums(dose.tox)
+    if (sum(dose.tox) == 0)
+    {
+      max.dose <- 0
+    } else
+    {
+      max.dose <- max(seq_along(dose.hist)[dose.hist > 0])
+    }
+  }
+
+  param <- FitWorkingModelMLE(dose.tox, skeleton, model, ...)
+  mtd <- MTD(param, skeleton, model, target, ...)
+  dose.next <- Assign(mtd, max.dose)
+
+  return(list(param = param, mtd = mtd, dose.next = dose.next))
+}
 
 
 # test --------------------------------------------------------------------
 
 param <- c(-1, 1)
 skeleton <- c(0.1, 0.5, 0.6, 0.9)
-dose <- c(1, 1, 2, 2, 3)
-tox <- c(0, 0, 0, 0, 0)
+dose <- c(1, 1, 2, 2)
+tox <- c(0, 0, 0, 0)
 dose.tox <- Seq2DoseTox(dose, tox, 4, 2)
 tox.rate <- WorkingModel(param, skeleton, model = "power")$tox.rate
 print(tox.rate)
@@ -143,3 +173,6 @@ param.fit <- FitWorkingModelMLE(dose.tox, skeleton)
 print(param.fit)
 
 print(WorkingModel(param.fit, skeleton)$tox.rate)
+
+
+print(CRMMLE(dose.tox, skeleton, target = c(0.5, 0.25)))
