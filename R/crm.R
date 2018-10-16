@@ -24,10 +24,9 @@ LogLik <- function(dose.tox, tox.rate)
 #' @examples
 PowerWorkingModel <- function(b, skeleton)
 {
-  cum.tox.rate <- cbind(1, outer(skeleton, cumsum(exp(b)), "^"), 0)
-  m <- ncol(cum.tox.rate)
-  tox.rate <- cum.tox.rate[, 1 : (m - 1)] - cum.tox.rate[, 2 : m]
-  return(tox.rate)
+  cum.tox.rate <- outer(skeleton, cumsum(exp(b)), "^")
+  tox.rate <- cbind(1, cum.tox.rate) - cbind(cum.tox.rate, 0)
+  return(list(tox.rate = tox.rate, cum.tox.rate = cum.tox.rate))
 }
 
 #' Compute Toxicity Rates for Working Model
@@ -48,10 +47,30 @@ WorkingModel <- function(param, skeleton, model = "power", ...)
          paste(model, "model currently NOT supported"))
 }
 
+#' Compute Maimum Tolerated Dose (MTD) from Working Model
+#'
+#' @inheritParams WorkingModel
+#' @param target target cumulative toxicity rates, a vector of length = (# of toxicity levels - 1)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+MTD <- function(param, skeleton, model = "power", target, ...)
+{
+  cum.tox.rate <- WorkingModel(param, skeleton, model, ...)$cum.tox.rate
+  mtd <- min(colSums(cum.tox.rate <= matrix(target, length(skeleton), 2, byrow = TRUE)))
+  return(mtd)
+}
+
 # test --------------------------------------------------------------------
 
+param <- c(-1, 1)
+skeleton <- c(0.1, 0.5, 0.6, 0.9)
 dose.tox <- matrix(c(1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1), 4, 3, byrow = TRUE)
-tox.rate <- WorkingModel(c(-1, 1), c(0.1, 0.5, 0.6, 0.9), model = "power")
+tox.rate <- WorkingModel(param, skeleton, model = "power")$tox.rate
 print(tox.rate)
 
 print(LogLik(dose.tox, tox.rate))
+mtd <- MTD(param, skeleton, target = c(0.4, 0.4))
+print(mtd)
