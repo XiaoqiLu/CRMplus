@@ -31,7 +31,7 @@ PowerWorkingModel <- function(b, skeleton)
 
 #' Compute Toxicity Rates for Working Model
 #'
-#' @param param parameters of working model
+#' @param param parameters of working model, a real vector of length = (# of toxicity levels - 1)
 #' @param skeleton mapped skeleton for dose levels
 #' @param model working model, character, default = "power"
 #' @param ... other (fixed) parameters of working model
@@ -63,14 +63,44 @@ MTD <- function(param, skeleton, model = "power", target, ...)
   return(mtd)
 }
 
+#' Fit Working Model by Maximum Likelihood Estimate (MLE)
+#'
+#' @inheritParams LogLik
+#' @inheritParams WorkingModel
+#'
+#' @return
+#' @export
+#'
+#' @examples
+FitWorkingModelMLE <- function(dose.tox, skeleton, model = "power", ...)
+{
+  param <- rep(0, ncol(dose.tox) - 1)
+
+  Fun <- function(x)
+  {
+    tox.rate <- WorkingModel(x, skeleton, model, ...)$tox.rate
+    loglik <- LogLik(dose.tox, tox.rate)
+    return(- loglik)
+  }
+
+  param <- optim(param, Fun)$par
+
+  return(param)
+}
+
 # test --------------------------------------------------------------------
 
 param <- c(-1, 1)
 skeleton <- c(0.1, 0.5, 0.6, 0.9)
-dose.tox <- matrix(c(1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1), 4, 3, byrow = TRUE)
+dose.tox <- matrix(c(0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0), 4, 3, byrow = TRUE)
 tox.rate <- WorkingModel(param, skeleton, model = "power")$tox.rate
 print(tox.rate)
 
 print(LogLik(dose.tox, tox.rate))
 mtd <- MTD(param, skeleton, target = c(0.4, 0.4))
 print(mtd)
+
+param.fit <- FitWorkingModelMLE(dose.tox, skeleton)
+print(param.fit)
+
+print(WorkingModel(param.fit, skeleton)$tox.rate)
