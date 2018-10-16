@@ -59,7 +59,7 @@ WorkingModel <- function(param, skeleton, model = "power", ...)
 MTD <- function(param, skeleton, model = "power", target, ...)
 {
   cum.tox.rate <- WorkingModel(param, skeleton, model, ...)$cum.tox.rate
-  mtd <- min(colSums(cum.tox.rate <= matrix(target, length(skeleton), 2, byrow = TRUE)))
+  mtd <- min(colSums(cum.tox.rate <= matrix(target, length(skeleton), length(target), byrow = TRUE)))
   return(mtd)
 }
 
@@ -83,7 +83,13 @@ FitWorkingModelMLE <- function(dose.tox, skeleton, model = "power", ...)
     return(- loglik)
   }
 
-  param <- optim(param, Fun)$par
+  if (length(param) == 1)
+  {
+    param <- optim(param, Fun, method = "Brent", lower = -10, upper = 10)$par
+  } else
+  {
+    param <- optim(param, Fun)$par
+  }
 
   return(param)
 }
@@ -171,6 +177,42 @@ CRM <- function(dose.tox, skeleton, model = "power", method = "mle", target, max
 }
 
 
+#' Parallel CRM
+#'
+#' @param skeleton mapped skeleton for dose levels, for parallel CRM it's a matrix of (# of dose levels)-by-(# of toxicity types)
+#' @inheritParams CRM
+#'
+#' @return
+#' @export
+#'
+#' @examples
+ParallelCRM <- function(dose.tox, skeleton, model = "power", method = "mle", target, max.dose = NULL, ...)
+{
+  if (is.null(max.dose))
+  {
+    dose.hist <- rowSums(dose.tox)
+    if (sum(dose.tox) == 0)
+    {
+      max.dose <- 0
+    } else
+    {
+      max.dose <- max(seq_along(dose.hist)[dose.hist > 0])
+    }
+  }
+
+  mtd <- nrow(dose.tox)
+  param <- NULL
+  for (k in 1 : length(target))
+  {
+    res <- CRM(dose.tox[, c(1, k + 1)], skeleton[, k], model, method, target[k], max.dose, ...)
+    param <- cbind(param, res$param)
+    mtd <- min(mtd, res$mtd)
+  }
+  dose.next <- Assign(mtd, max.dose)
+
+  return(list(param = param, mtd = mtd, dose.next = dose.next))
+}
+
 # test --------------------------------------------------------------------
 
 param <- c(-1, 1)
@@ -190,5 +232,5 @@ print(param.fit)
 
 print(WorkingModel(param.fit, skeleton)$tox.rate)
 
-
-print(CRM(dose.tox, skeleton, target = c(0.5, 0.25)))
+print(CRM(dose.tox[, c(1, 2)], skeleton, target = 0.5))
+print(ParallelCRM(dose.tox, cbind(skeleton, skeleton), target = c(0.5, 0.25)))
