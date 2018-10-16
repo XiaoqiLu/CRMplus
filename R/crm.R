@@ -213,6 +213,43 @@ ParallelCRM <- function(dose.tox, skeleton, model = "power", method = "mle", tar
   return(list(param = param, mtd = mtd, dose.next = dose.next))
 }
 
+#' CRM Simulation for One Subject
+#'
+#' @inheritParams Seq2DoseTox
+#' @param n.trial # of trials in a sequence
+#' @param Generator generator function to simulate trial data, takes dose as input and returns a random toxicity
+#' @inheritParams CRM
+#' @param crm CRM type, default = "regular" (use CRM function), alternative is "parallel" (use ParallelCRM function)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "power", method = "mle", target, crm = "regular", ...)
+{
+  dose.tox <- matrix(0, n.dose, n.tox)
+  max.dose <- 0
+  dose.next <- 1
+
+  for (i.trial in 1 : n.trial)
+  {
+    max.dose <- max(max.dose, dose.next)
+
+    tox.next <- Generator(dose.next)
+    dose.tox[dose.next, tox.next] <- dose.tox[dose.next, tox.next] + 1
+
+    res <- switch(crm,
+                  regular = CRM(dose.tox, skeleton, model, method, target, max.dose, ...),
+                  parallel = ParallelCRM(dose.tox, skeleton, model, method, target, max.dose, ...),
+                  paste(crm, "currently NOT supported"))
+
+    mtd <- res$mtd
+    dose.next <- res$dose.next
+  }
+
+  return(list(dose.tox = dose.tox, mtd = mtd))
+}
+
 # test --------------------------------------------------------------------
 
 param <- c(-1, 1)
