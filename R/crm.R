@@ -231,11 +231,12 @@ Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "pow
   dose.tox <- matrix(0, n.dose, n.tox + 1)
   max.dose <- 0
   dose.next <- 1
+  first.tox <- rep(Inf, n.tox + 1) # first time (of trial) where toxicity is observed
+  tox.next <- 0
 
   for (i.trial in 1 : n.trial)
   {
     max.dose <- max(max.dose, dose.next)
-
     tox.next <- Generator(dose.next)
     dose.tox[dose.next, tox.next + 1] <- dose.tox[dose.next, tox.next + 1] + 1
 
@@ -245,30 +246,16 @@ Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "pow
                   paste(crm, "currently NOT supported"))
 
     mtd <- res$mtd
-    dose.next <- res$dose.next
+    # dose.next <- res$dose.next
+    if (any(tox.next != 0))
+    {
+      dose.next <- min(dose.next, res$dose.next)
+    } else
+    {
+      dose.next <- res$dose.next
+    }
+    first.tox[tox.next + 1] <- pmin(i.trial, first.tox[tox.next + 1])
   }
 
-  return(list(dose.tox = dose.tox, mtd = mtd))
+  return(list(dose.tox = dose.tox, mtd = mtd, dose.next = dose.next, first.tox = first.tox))
 }
-
-# test --------------------------------------------------------------------
-
-# param <- c(-1, 1)
-# skeleton <- c(0.1, 0.5, 0.6, 0.9)
-# dose <- c(1, 1, 2, 2)
-# tox <- c(0, 0, 0, 0)
-# dose.tox <- Seq2DoseTox(dose, tox, 4, 2)
-# tox.rate <- WorkingModel(param, skeleton, model = "power")$tox.rate
-# print(tox.rate)
-#
-# print(LogLik(dose.tox, tox.rate))
-# mtd <- MTD(param, skeleton, target = c(0.5, 0.25))
-# print(mtd)
-#
-# param.fit <- FitWorkingModelMLE(dose.tox, skeleton)
-# print(param.fit)
-#
-# print(WorkingModel(param.fit, skeleton)$tox.rate)
-#
-# print(CRM(dose.tox[, c(1, 2)], skeleton, target = 0.5))
-# print(ParallelCRM(dose.tox, cbind(skeleton, skeleton), target = c(0.5, 0.25)))
