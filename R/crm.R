@@ -60,7 +60,22 @@ MTD <- function(param, skeleton, model = "power", target, ...)
 {
   cum.tox.rate <- WorkingModel(param, skeleton, model, ...)$cum.tox.rate
   # mtd <- min(colSums(cum.tox.rate <= matrix(target, length(skeleton), length(target), byrow = TRUE)))
-  mtd <- min(apply(abs(cum.tox.rate - matrix(target, length(skeleton), length(target), byrow = TRUE)), 2, which.min))
+  mtd <- rep(NA, length(target))
+  for (k in 1 : length(target))
+  {
+    if (cum.tox.rate[1, k] > target[k])
+    {
+      mtd[k] <- 1
+    } else if (cum.tox.rate[length(skeleton), k] < target[k])
+    {
+      mtd[k] <- length(skeleton)
+    } else
+    {
+      mtd[k] <- which.min(abs(cum.tox.rate[, k] - target[k]))
+    }
+  }
+  mtd <- min(mtd)
+  # mtd <- min(apply(abs(cum.tox.rate - matrix(target, length(skeleton), length(target), byrow = TRUE)), 2, which.min))
   return(mtd)
 }
 
@@ -239,6 +254,7 @@ Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "pow
     max.dose <- max(max.dose, dose.next)
     tox.next <- Generator(dose.next)
     dose.tox[dose.next, tox.next + 1] <- dose.tox[dose.next, tox.next + 1] + 1
+    # cat("Trial:", i.trial, "Dose:", dose.next, "Tox:", tox.next, "Max Dose:", max.dose, "\n")
 
     res <- switch(crm,
                   regular = CRM(dose.tox, skeleton, model, method, target, max.dose, ...),

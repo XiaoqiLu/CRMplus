@@ -3,7 +3,7 @@ library(dfcrm)
 set.seed(1024)
 
 calibration <- read.csv("scenario/calibration.csv")
-n.sim <- 100
+n.sim <- 1000
 
 Skeleton <- function(n, target, calibration)
 {
