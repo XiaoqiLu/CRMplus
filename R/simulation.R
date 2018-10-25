@@ -3,7 +3,7 @@ library(dfcrm)
 set.seed(1024)
 
 calibration <- read.csv("scenario/calibration.csv")
-n.sim <- 1000
+n.sim <- 10000
 
 Skeleton <- function(n, target, calibration)
 {
@@ -31,25 +31,25 @@ SimWrapper <- function(n.sim, n.trial, Generator, skeleton, target, crm)
   return(list(mtd = mtd.sim, first.tox = first.tox.sim))
 }
 
-for (i.scn in 1 : 7)
+for (n.trial in c(18, 21, 40))
 {
-  scn <- read.csv(paste0("scenario/scenario_0", i.scn, ".csv"))
-  cat("\n=================== scenario", i.scn, "==========================\n")
+  cat("\n================= n.trial", n.trial, "==================\n")
+  skeleton25 <- Skeleton(n.trial, 0.25, calibration)
+  skeleton35 <- Skeleton(n.trial, 0.35, calibration)
+  skeleton50 <- Skeleton(n.trial, 0.50, calibration)
 
-  cat("Clinician:           ", format(scn$Clinician, nsmall = 2, width = 6), "\n")
-  cat("Patient:             ", format(scn$Patient, nsmall = 2, width = 6), "\n")
-  cat("Clinician OR Patient:", format(scn$Clinician.Patient, nsmall = 2, width = 6), "\n")
-
-  GenSimple <- function(dose) return(ToxGenerator(dose, "simple", scn))
-  GenMarginal <- function(dose) return(ToxGenerator(dose, "marginal", scn))
-  GenJoint <- function(dose) return(ToxGenerator(dose, "joint", scn))
-
-  for (n.trial in c(21, 40, 18))
+  for (i.scn in 1 : 7)
   {
-    cat("\n----------- n.trial", n.trial, "-----------\n")
-    skeleton25 <- Skeleton(n.trial, 0.25, calibration)
-    skeleton35 <- Skeleton(n.trial, 0.35, calibration)
-    skeleton50 <- Skeleton(n.trial, 0.50, calibration)
+    scn <- read.csv(paste0("scenario/scenario_0", i.scn, ".csv"))
+    cat("\n-------------------- scenario", i.scn, "--------------------\n")
+
+    cat("Clinician:           ", format(scn$Clinician, nsmall = 2, width = 6), "\n")
+    cat("Patient:             ", format(scn$Patient, nsmall = 2, width = 6), "\n")
+    cat("Clinician OR Patient:", format(scn$Clinician.Patient, nsmall = 2, width = 6), "\n")
+
+    GenSimple <- function(dose) return(ToxGenerator(dose, "simple", scn))
+    GenMarginal <- function(dose) return(ToxGenerator(dose, "marginal", scn))
+    GenJoint <- function(dose) return(ToxGenerator(dose, "joint", scn))
 
     # regular: simple encoding
     cat("\n[regular] regular - simple encoding\n")
@@ -66,6 +66,7 @@ for (i.scn in 1 : 7)
     # parallel: joint encoding
     cat("\n[naive] parallel - joint encoding\n")
     sim <- SimWrapper(n.sim = n.sim, n.trial = n.trial, Generator = GenJoint, skeleton = cbind(skeleton50, skeleton25), target = c(0.50, 0.25), crm = "parallel")
-
   }
 }
+
+
