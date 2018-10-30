@@ -195,7 +195,7 @@ CRM <- function(dose.tox, skeleton, model = "power", method = "mle", target, max
 
 #' Parallel CRM
 #'
-#' @param skeleton mapped skeleton for dose levels, for parallel CRM it's a matrix of (# of dose levels)-by-(# of toxicity types)
+#' @param dose.tox list of dose.tox
 #' @inheritParams CRM
 #'
 #' @return
@@ -220,9 +220,10 @@ ParallelCRM <- function(dose.tox, skeleton, model = "power", method = "mle", tar
   param <- NULL
   for (k in 1 : length(target))
   {
-    res <- CRM(dose.tox[, c(1, k + 1)], skeleton[, k], model, method, target[k], max.dose, ...)
+    res <- CRM(dose.tox[[k]], skeleton[, k], model, method, target[k], max.dose, ...)
     param <- cbind(param, res$param)
     mtd <- min(mtd, res$mtd)
+    # cat(" ", res$mtd)
   }
   dose.next <- Assign(mtd, max.dose)
 
@@ -243,18 +244,44 @@ ParallelCRM <- function(dose.tox, skeleton, model = "power", method = "mle", tar
 #' @examples
 Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "power", method = "mle", target, crm = "regular", ...)
 {
-  dose.tox <- matrix(0, n.dose, n.tox + 1)
+  if (crm == "regular")
+  {
+    dose.tox <- matrix(0, n.dose, n.tox + 1)
+  } else if (crm == "parallel")
+  {
+    dose.tox <- list()
+    first.tox <- list()
+    for (k in 1 : length(target))
+    {
+      dose.tox[[k]] <- matrix(0, n.dose, 2)
+    }
+  }
   max.dose <- 0
   dose.next <- 1
-  first.tox <- rep(Inf, n.tox + 1) # first time (of trial) where toxicity is observed
   tox.next <- 0
+  first.tox <- rep(Inf, n.tox + 1) # first time (of trial) where toxicity is observed
 
   for (i.trial in 1 : n.trial)
   {
     max.dose <- max(max.dose, dose.next)
     tox.next <- Generator(dose.next)
-    dose.tox[dose.next, tox.next + 1] <- dose.tox[dose.next, tox.next + 1] + 1
-    # cat("Trial:", i.trial, "Dose:", dose.next, "Tox:", tox.next, "Max Dose:", max.dose, "\n")
+    if (crm == "regular")
+    {
+      dose.tox[dose.next, tox.next + 1] <- dose.tox[dose.next, tox.next + 1] + 1
+    } else if (crm == "parallel")
+    {
+      for (k in 1 : length(target))
+      {
+        if (k %in% tox.next)
+        {
+          dose.tox[[k]][dose.next, 2] <- dose.tox[[k]][dose.next, 2] + 1
+        } else
+        {
+          dose.tox[[k]][dose.next, 1] <- dose.tox[[k]][dose.next, 1] + 1
+        }
+      }
+    }
+    # cat("Trial:", i.trial, "Dose:", dose.next, "Tox:", tox.next, "Max Dose:", max.dose)
 
     res <- switch(crm,
                   regular = CRM(dose.tox, skeleton, model, method, target, max.dose, ...),
@@ -262,7 +289,6 @@ Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "pow
                   paste(crm, "currently NOT supported"))
 
     mtd <- res$mtd
-    # dose.next <- res$dose.next
     if (any(tox.next != 0))
     {
       dose.next <- min(dose.next, res$dose.next)
@@ -270,8 +296,10 @@ Simulation <- function(n.dose, n.tox, n.trial, Generator, skeleton, model = "pow
     {
       dose.next <- res$dose.next
     }
+    # cat(" MTD:", mtd, "Dose Next:", dose.next, "\n")
     first.tox[tox.next + 1] <- pmin(i.trial, first.tox[tox.next + 1])
   }
+  # print(dose.tox)
 
   return(list(dose.tox = dose.tox, mtd = mtd, dose.next = dose.next, first.tox = first.tox))
 }

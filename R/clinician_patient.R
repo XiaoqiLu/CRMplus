@@ -60,7 +60,7 @@ EncodingMarginal <- function(x)
     return(0)
   } else if (x == 2)
   {
-    return (1)
+    return(1)
   } else if (x == 3)
   {
     return(2)

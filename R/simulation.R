@@ -28,7 +28,7 @@ SimWrapper <- function(n.sim, n.trial, Generator, skeleton, target, crm)
   {
     cat(paste0("N", tox, ":"), format(round(table(factor(first.tox.sim[, tox + 1], levels = c(1 : n.trial, Inf))) / n.sim * 100), width = 3), "\n")
   }
-  return(list(mtd = mtd.sim, first.tox = first.tox.sim))
+  return(list(mtd = mtd.sim))
 }
 
 for (n.trial in c(18, 21, 40))
