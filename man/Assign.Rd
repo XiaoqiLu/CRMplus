@@ -2,15 +2,24 @@
 % Please edit documentation in R/crm.R
 \name{Assign}
 \alias{Assign}
-\title{Dose Assignment/Recommendation Given MTD Estiamte and Highest Assigned Dose, Avoid Skipping Dose}
+\title{Dose Assignment/Recommendation Given MTD Estiamte and Trial Sequence, with Restrictions}
 \usage{
-Assign(mtd, max.dose)
+Assign(mtd, dose, tox, cohort.size = 1, allow.dose.skipping = FALSE,
+  allow.escalation.on.toxicity = FALSE)
 }
 \arguments{
-\item{mtd}{MTD estimate}
+\item{mtd}{MTD}
 
-\item{max.dose}{highest assigned dose so far}
+\item{dose}{dose level sequence}
+
+\item{tox}{toxicity sequence}
+
+\item{cohort.size}{default = 1}
+
+\item{allow.dose.skipping}{default = FALSE}
+
+\item{allow.escalation.on.toxicity}{default = FALSE}
 }
 \description{
-Dose Assignment/Recommendation Given MTD Estiamte and Highest Assigned Dose, Avoid Skipping Dose
+Dose Assignment/Recommendation Given MTD Estiamte and Trial Sequence, with Restrictions
 }

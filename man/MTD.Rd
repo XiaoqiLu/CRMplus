@@ -2,21 +2,15 @@
 % Please edit documentation in R/crm.R
 \name{MTD}
 \alias{MTD}
-\title{Compute Maimum Tolerated Dose (MTD) from Working Model}
+\title{Compute Maximum Tolerated Dose (MTD) from Toxicity Rates and Target}
 \usage{
-MTD(param, skeleton, model = "power", target, ...)
+MTD(tox.rate, target)
 }
 \arguments{
-\item{param}{parameters of working model, a real vector of length = # of toxicity levels}
+\item{tox.rate}{(cumulative) toxicity rates computed from model parameter, a matrix where nrow = # of dose levels (K), and ncol = # of toxicity levels (L).}
 
-\item{skeleton}{mapped skeleton for dose levels}
-
-\item{model}{working model, character, default = "power"}
-
-\item{target}{target cumulative toxicity rates, a vector of length = # of toxicity levels}
-
-\item{...}{other (fixed) parameters of working model}
+\item{target}{targets for (cumulative) toxicity rates, a vector of length = # of toxicity levels (L)}
 }
 \description{
-Compute Maimum Tolerated Dose (MTD) from Working Model
+Compute Maximum Tolerated Dose (MTD) from Toxicity Rates and Target
 }

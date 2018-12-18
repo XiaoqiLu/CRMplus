@@ -4,16 +4,16 @@
 \alias{Seq2DoseTox}
 \title{Convert Trial Sequence to Dose-Toxicity Data (Counts)}
 \usage{
-Seq2DoseTox(dose, tox, n.dose, n.tox)
+Seq2DoseTox(dose, tox, K, L)
 }
 \arguments{
 \item{dose}{dose level sequence}
 
 \item{tox}{toxicity sequence}
 
-\item{n.dose}{number of possible dose levels}
+\item{K}{# of possible dose levels}
 
-\item{n.tox}{number of possible toxicity levels (0 not included)}
+\item{L}{# of possible toxicity levels (0 not included)}
 }
 \description{
 Convert Trial Sequence to Dose-Toxicity Data (Counts)
