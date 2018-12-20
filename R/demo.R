@@ -69,7 +69,7 @@ for (n in c(18, 40))
     # joint - joint
     method <- "jntjnt"
     target <- c(target.cop, target.c)
-    skeleton <- Skeleton(n, target[1])
+    skeleton <- Skeleton(n, target[2])
     file.name <- paste0("result/n_", n, "_scenario_", i.scenario, "_method_", method, "RData")
     if (!file.exists(file.name))
     {
@@ -103,7 +103,9 @@ for (n in c(18, 40))
 par(mfrow = c(1, 3))
 n <- 18
 i.scenario <- 3
-seed <- 9
+seed <- 33 # this as demo, but P(both) seems too high
+seed <- 37
+seed <- 38
 
 cat("\n================= n", n, "==================\n")
 
@@ -127,16 +129,17 @@ pt <- rep(1, n)
 pt[(yc == 1) & (yp == 1)] <- 8
 pt[(yc == 0) & (yp == 1)] <- 3
 pt[(yc == 1) & (yp == 0)] <- 4
-plot(1 : n, dose, type = "p", pch = pt, main = "Marginal", cex = 2, ylim = c(1, 5))
+plot(1 : n, dose, type = "p", pch = pt, main = "Marginal", cex = 2, ylim = c(1, 5), xlab = "Patient", ylab = "Dose Level")
 legend(x = "topright", legend = c("None", "Patient Only", "Clinician Only", "Both"), pch = c(1, 3, 4, 8))
 cat(method, "\n")
 print(round(t(sim$tox.rate[, , 1]) * 100, 1))
 print(round(t(sim$tox.rate[, , 2]) * 100, 1))
+# print(round(t(sim$param), 4))
 
 # joint - joint
 method <- "jntjnt"
 target <- c(target.cop, target.c)
-skeleton <- Skeleton(n, target[1])
+skeleton <- Skeleton(n, target[2])
 sim <- SimOnePROCRM(n, scenario.table, skeleton, target, method, seed)
 dose <- sim$dose
 yc <- sim$tox.c
@@ -145,11 +148,12 @@ pt <- rep(1, n)
 pt[(yc == 1) & (yp == 1)] <- 8
 pt[(yc == 0) & (yp == 1)] <- 3
 pt[(yc == 1) & (yp == 0)] <- 4
-plot(1 : n, dose, type = "p", pch = pt, main = "Joint", cex = 2, ylim = c(1, 5))
+plot(1 : n, dose, type = "p", pch = pt, main = "Joint", cex = 2, ylim = c(1, 5), xlab = "Patient", ylab = "Dose Level")
 legend(x = "topright", legend = c("None", "Patient Only", "Clinician Only", "Both"), pch = c(1, 3, 4, 8))
 cat(method, "\n")
 print(round(t(sim$tox.rate[, , 1]) * 100, 1))
 print(round(t(sim$tox.rate[, , 2]) * 100, 1))
+# print(round(t(sim$param), 4))
 
 # joint - marginal
 method <- "jntmar"
@@ -164,9 +168,9 @@ pt <- rep(1, n)
 pt[(yc == 1) & (yp == 1)] <- 8
 pt[(yc == 0) & (yp == 1)] <- 3
 pt[(yc == 1) & (yp == 0)] <- 4
-plot(1 : n, dose, type = "p", pch = pt, main = "Joint/Marginal", cex = 2, ylim = c(1, 5))
+plot(1 : n, dose, type = "p", pch = pt, main = "Joint/Marginal", cex = 2, ylim = c(1, 5), xlab = "Patient", ylab = "Dose Level")
 legend(x = "topright", legend = c("None", "Patient Only", "Clinician Only", "Both"), pch = c(1, 3, 4, 8))
 cat(method, "\n")
 print(round(t(sim$tox.rate[, , 1]) * 100, 1))
 print(round(t(sim$tox.rate[, , 2]) * 100, 1))
-
+# print(round(t(sim$param), 4))
