@@ -48,7 +48,7 @@ for (n in c(18, 40))
       load(file.name)
     }
     cat("No - PRO\n")
-    print(table(factor(sim$mtd, 1 : 5)))
+    print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
 
     # marginal
     method <- "mar"
@@ -64,7 +64,7 @@ for (n in c(18, 40))
       load(file.name)
     }
     cat("Marginal\n")
-    print(table(factor(sim$mtd, 1 : 5)))
+    print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
 
     # joint - joint
     method <- "jntjnt"
@@ -80,7 +80,7 @@ for (n in c(18, 40))
       load(file.name)
     }
     cat("Joint\n")
-    print(table(factor(sim$mtd, 1 : 5)))
+    print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
 
     # joint - marginal
     method <- "jntmar"
@@ -96,7 +96,7 @@ for (n in c(18, 40))
       load(file.name)
     }
     cat("Joint/Marginal\n")
-    print(table(factor(sim$mtd, 1 : 5)))
+    print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
   }
 }
 
@@ -160,7 +160,6 @@ method <- "jntmar"
 target <- c(target.cop, target.c)
 skeleton <- cbind(Skeleton(n, target[1]), Skeleton(n, target[2]))
 sim <- SimOnePROCRM(n, scenario.table, skeleton, target, method, seed)
-save(sim, file = paste0("result/n_", n, "_scenario_", i.scenario, "_method_", method, "RData"))
 dose <- sim$dose
 yc <- sim$tox.c
 yp <- sim$tox.p
