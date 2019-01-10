@@ -103,9 +103,11 @@ for (n in c(18, 40))
 par(mfrow = c(1, 3))
 n <- 18
 i.scenario <- 3
-seed <- 33 # this as demo, but P(both) seems too high
-seed <- 37
 seed <- 38
+
+# i.scenario <- 5
+# seed <- 3
+# seed <- 5
 
 cat("\n================= n", n, "==================\n")
 

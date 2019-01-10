@@ -42,7 +42,7 @@ ToxRatePower <- function(b, skeleton)
 LogProb <- function(dose.tox, tox.rate)
 {
 
-  log.prob <- sum((dose.tox + .Machine$double.eps) * log(cbind(1, tox.rate) - cbind(tox.rate, 0)))
+  log.prob <- sum((dose.tox + sqrt(.Machine$double.eps)) * log(cbind(1, tox.rate) - cbind(tox.rate, 0)))
   return(log.prob)
 }
 
