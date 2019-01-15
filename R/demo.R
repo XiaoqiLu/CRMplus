@@ -18,8 +18,6 @@ Skeleton <- function(n, target)
   return(getprior(hw, target, 3, 5))
 }
 
-
-
 for (n in c(18, 40))
 {
   cat("\n================= n", n, "==================\n")
@@ -49,6 +47,7 @@ for (n in c(18, 40))
     }
     cat("No - PRO\n")
     print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
+    cat(format(apply(outer(sim$dose, 1 : 5, "=="), 3, mean) * 100, digits = 2, nsmall = 2), "\n")
 
     # marginal
     method <- "mar"
@@ -65,6 +64,7 @@ for (n in c(18, 40))
     }
     cat("Marginal\n")
     print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
+    cat(format(apply(outer(sim$dose, 1 : 5, "=="), 3, mean) * 100, digits = 2, nsmall = 2), "\n")
 
     # joint - joint
     method <- "jntjnt"
@@ -81,6 +81,7 @@ for (n in c(18, 40))
     }
     cat("Joint\n")
     print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
+    cat(format(apply(outer(sim$dose, 1 : 5, "=="), 3, mean) * 100, digits = 2, nsmall = 2), "\n")
 
     # joint - marginal
     method <- "jntmar"
@@ -97,6 +98,7 @@ for (n in c(18, 40))
     }
     cat("Joint/Marginal\n")
     print(table(factor(sim$mtd, 1 : 5)) / n.sim * 100)
+    cat(format(apply(outer(sim$dose, 1 : 5, "=="), 3, mean) * 100, digits = 2, nsmall = 2), "\n")
   }
 }
 
